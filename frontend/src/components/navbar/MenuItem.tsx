@@ -127,7 +127,7 @@ const MenuItem = () => {
                         )}
                     </div>
                     <div className="w-[150px] h-[48px] lg:h-[64] items-center justify-center flex flex-row gap-2 rounded-xl hover:bg-gray-100 cursor-pointer">
-                        <p className="text-lg">Info</p>
+                        <p className="text-lg">About</p>
                     </div>
                     <div className="w-[150px] h-[48px] lg:h-[64] items-center justify-center flex flex-row gap-2 rounded-xl hover:bg-gray-100 cursor-pointer">
                         <p className="text-lg">Contact</p>

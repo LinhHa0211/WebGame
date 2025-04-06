@@ -3,11 +3,12 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 import Navbar from "@/components/navbar/Navbar";
+import Footer from "@/components/footer/Footer";
 import LoginModal from "@/components/modal/LoginModal";
 import SignupModal from "@/components/modal/SignupModal";
 import AddGameModal from "@/components/modal/AddGameModal";
-import { ToastContainer } from "react-toastify"; // Import ToastContainer
-import "react-toastify/dist/ReactToastify.css"; // Import styles
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,14 +53,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
         <Navbar />
-        <div className="pt-32">
+        <main className="flex-grow pt-32">
           <ToastProvider>{children}</ToastProvider>
-        </div>
+        </main>
         <LoginModal />
         <SignupModal />
         <AddGameModal />
+        <Footer />
       </body>
     </html>
   );

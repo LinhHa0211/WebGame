@@ -158,6 +158,12 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                                     <LogoutButton />
                                     <hr />
                                     <MenuLink
+                                        label="My profile"
+                                        onClick={() => {
+                                            window.location.href = '/myprofile'
+                                        }}
+                                    />
+                                    <MenuLink
                                         label="Library"
                                         onClick={() => {
                                             window.location.href = '/userlib'
@@ -247,7 +253,7 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                         </div>
 
                         <MenuLink
-                            label="Info"
+                            label="About"
                             onClick={() => setIsOpen(false)}
                         />
                         <MenuLink
@@ -262,6 +268,12 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                             <>
                                 <LogoutButton />
                                 <hr />
+                                <MenuLink
+                                    label="My profile"
+                                    onClick={() => {
+                                        window.location.href = '/myprofile'
+                                    }}
+                                />
                                 <MenuLink
                                     label="Library"
                                     onClick={() => {
