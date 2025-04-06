@@ -9,7 +9,7 @@ from .import api
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='rest_register'),
-    path('login/', LoginView.as_view(), name='rest_login'),
+    path('login/', api.user_login, name='api_user_login'),
     path('logout/', LogoutView.as_view(), name='rest_logout'),
     path('<uuid:userId>/', api.user_detail, name='api_user_detail'),
 ]
