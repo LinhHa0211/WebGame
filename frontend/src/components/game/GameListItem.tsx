@@ -1,13 +1,20 @@
 import Image from "next/image";
 import { GameType } from "./GameList";
 import { useRouter } from "next/navigation";
+import FavoriteButton from "../button/FavoriteButton";
 
-interface GameProps{
-    game: GameType
+interface GameProps {
+    game: GameType;
+    isFavorited: boolean;
+    onToggleFavorite: (gameId: string, isFavorited: boolean) => void;
+    userId?: string | null; // Add userId prop
 }
 
 const GameListItem: React.FC<GameProps> = ({
-    game
+    game,
+    isFavorited,
+    onToggleFavorite,
+    userId
 }) => {
     const router = useRouter();
 
@@ -24,6 +31,12 @@ const GameListItem: React.FC<GameProps> = ({
                     className="hover:scale-110 object-cover transition h-full w-full"
                     alt="gameList"
                 />
+                <FavoriteButton
+                    gameId={game.id}
+                    isFavorited={isFavorited}
+                    onToggleFavorite={onToggleFavorite}
+                    userId={userId} // Pass userId to FavoriteButton
+                />
             </div>
             <div className="mt-2">
                 <p className="text-lg font-bold">{game.title}</p>
@@ -32,7 +45,7 @@ const GameListItem: React.FC<GameProps> = ({
                 <p className="text-sm text-gray-600"><strong>${game.price}</strong></p>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default GameListItem;

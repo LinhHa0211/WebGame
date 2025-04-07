@@ -20,9 +20,6 @@ const Navbar = async () => {
                         <MenuItem/>
                     </div>
                     <div className="flex items-center space-x-6">
-                        <AddGameButton
-                            userId={userId}
-                        />
                         <SearchButton/>
                         <UserNav
                             userId={userId}

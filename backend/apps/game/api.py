@@ -282,3 +282,49 @@ def order_game(request, game_id):
         print('Error', e)
         return JsonResponse({'success': False})
     
+@api_view(['POST'])
+def toggle_favorite(request, gameId):
+    try:
+        # Get the game
+        game = Game.objects.get(id=gameId)
+        
+        # Check if the user already has an order for this game
+        try:
+            order = Order.objects.get(user=request.user, game=game)
+            if order.status != 'WL':
+                return JsonResponse(
+                    {'non_field_errors': ['You have already bought this game']},
+                    status=400
+                )
+            else:
+                # Remove from wishlist
+                order.delete()
+                return JsonResponse({
+                    'success': True,
+                    'is_favorited': False
+                }, status=200)
+        except Order.DoesNotExist:
+            # Add to wishlist
+            order = Order(
+                user=request.user,
+                game=game,
+                total_price=0,
+                status='WL'
+            )
+            order.save()
+            serializer = OrderSerializer(order)
+            return JsonResponse({
+                'success': True,
+                'is_favorited': True,
+                'order': serializer.data
+            }, status=201)
+    except Game.DoesNotExist:
+        return JsonResponse(
+            {'non_field_errors': ['Game not found']},
+            status=404
+        )
+    except Exception as e:
+        return JsonResponse(
+            {'non_field_errors': [f'Error: {str(e)}']},
+            status=500
+        )

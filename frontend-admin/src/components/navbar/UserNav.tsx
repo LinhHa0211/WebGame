@@ -158,15 +158,9 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                                     <LogoutButton />
                                     <hr />
                                     <MenuLink
-                                        label="My profile"
+                                        label="Manage"
                                         onClick={() => {
-                                            window.location.href = '/myprofile'
-                                        }}
-                                    />
-                                    <MenuLink
-                                        label="Library"
-                                        onClick={() => {
-                                            window.location.href = '/userlib'
+                                            window.location.href = '/manage'
                                         }}
                                     />
                                 </>
@@ -190,13 +184,6 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                             )}
                         </div>
                         <hr />
-
-                        <MenuLink
-                            label="Library"
-                            onClick={() => {
-                                window.location.href = '/userlib'
-                            }}
-                        />
 
                         {/* Category Dropdown */}
                         <div className="dropdown-container relative">
@@ -269,15 +256,9 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                                 <LogoutButton />
                                 <hr />
                                 <MenuLink
-                                    label="My profile"
+                                    label="Manage"
                                     onClick={() => {
-                                        window.location.href = '/myprofile'
-                                    }}
-                                />
-                                <MenuLink
-                                    label="Library"
-                                    onClick={() => {
-                                        window.location.href = '/userlib'
+                                        window.location.href = '/manage'
                                     }}
                                 />
                             </>

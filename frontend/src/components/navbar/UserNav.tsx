@@ -169,6 +169,12 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                                             window.location.href = '/userlib'
                                         }}
                                     />
+                                    <MenuLink
+                                        label="Inbox"
+                                        onClick={() => {
+                                            window.location.href = '/inbox'
+                                        }}
+                                    />
                                 </>
                             ) : (
                                 <>
@@ -190,13 +196,6 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                             )}
                         </div>
                         <hr />
-
-                        <MenuLink
-                            label="Library"
-                            onClick={() => {
-                                window.location.href = '/userlib'
-                            }}
-                        />
 
                         {/* Category Dropdown */}
                         <div className="dropdown-container relative">
@@ -278,6 +277,12 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                                     label="Library"
                                     onClick={() => {
                                         window.location.href = '/userlib'
+                                    }}
+                                />
+                                <MenuLink
+                                    label="Inbox"
+                                    onClick={() => {
+                                        window.location.href = '/inbox'
                                     }}
                                 />
                             </>
