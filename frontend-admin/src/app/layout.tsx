@@ -6,7 +6,6 @@ import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import LoginModal from "@/components/modal/LoginModal";
 import SignupModal from "@/components/modal/SignupModal";
-import AddGameModal from "@/components/modal/AddGameModal";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -60,7 +59,6 @@ export default function RootLayout({
         </main>
         <LoginModal />
         <SignupModal />
-        <AddGameModal />
         <Footer />
       </body>
     </html>

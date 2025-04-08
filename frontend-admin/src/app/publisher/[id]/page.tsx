@@ -20,7 +20,7 @@ const PublisherDetailPage = async ({ params }: {params: {id: string}}) => {
                             alt="Publisher Name"
                             className="rounded-full"
                         />
-                        <h1 className="mt-6 text-2xl">{publisher.name}</h1>
+                        <h1 className="mt-6 text-2xl">{publisher.username}</h1>
                         {userId != publisher_id && (
                             <ContactButton/>
                         )}
