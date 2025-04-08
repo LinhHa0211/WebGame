@@ -9,7 +9,7 @@ import { getUserId } from '@/lib/actions';
 
 interface Publisher {
   id: string;
-  name: string;
+  username: string;
   avatar_url: string;
 }
 
@@ -75,7 +75,7 @@ const GameDetailPage = async ({ params }: GameDetailPageProps) => {
               alt="The publisher name"
             />
             <p className='text-xl'>
-              <strong>{game.data.publisher.name}</strong>
+              <strong>{game.data.publisher.username}</strong>
             </p>
           </Link>
           <hr />

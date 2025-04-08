@@ -139,7 +139,7 @@ const AddGameModal = () => {
 
                     <CustomButton
                         label="Next"
-                        className="bg-webgame hover:bg-webgame-dark"
+                        className="w-full bg-webgame hover:bg-webgame-dark"
                         onClick={() => setCurrentStep(2)}
                     />
                 </>
@@ -172,13 +172,13 @@ const AddGameModal = () => {
 
                     <CustomButton
                         label="Previous"
-                        className='mb-2 bg-black hover:bg-gray-800'
+                        className='w-full mb-2 bg-black hover:bg-gray-800'
                         onClick={() => setCurrentStep(1)}
                     />
 
                     <CustomButton
                         label="Next"
-                        className="bg-webgame hover:bg-webgame-dark"
+                        className="w-full bg-webgame hover:bg-webgame-dark"
                         onClick={() => setCurrentStep(3)}
                     />
                 </>
@@ -192,13 +192,13 @@ const AddGameModal = () => {
     
                     <CustomButton
                         label="Previous"
-                        className="mb-2 bg-black hover:bg-gray-800"
+                        className="w-full mb-2 bg-black hover:bg-gray-800"
                         onClick={() => setCurrentStep(2)}
                     />
 
                     <CustomButton
                         label="Next"
-                        className="bg-webgame hover:bg-webgame-dark"
+                        className="w-full bg-webgame hover:bg-webgame-dark"
                         onClick={() => setCurrentStep(4)}
                     />
                 </>
@@ -212,13 +212,13 @@ const AddGameModal = () => {
 
                     <CustomButton
                         label="Previous"
-                        className="mb-2 bg-black hover:bg-gray-800"
+                        className="w-full mb-2 bg-black hover:bg-gray-800"
                         onClick={() => setCurrentStep(3)}
                     />
 
                     <CustomButton
                         label="Next"
-                        className="bg-webgame hover:bg-webgame-dark"
+                        className="w-full bg-webgame hover:bg-webgame-dark"
                         onClick={() => setCurrentStep(5)}
                     />
                 </>
@@ -256,13 +256,13 @@ const AddGameModal = () => {
 
                     <CustomButton
                         label='Previous'
-                        className='mb-2 bg-black hover:bg-gray-800'
+                        className='w-full mb-2 bg-black hover:bg-gray-800'
                         onClick={() => setCurrentStep(4)}
                     />
 
                     <CustomButton
                         label='Submit'
-                        className="bg-webgame hover:bg-webgame-dark"
+                        className="w-full bg-webgame hover:bg-webgame-dark"
                         onClick={submitForm}
                     />
                 </>

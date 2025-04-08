@@ -6,7 +6,7 @@ import UserGameListItem from "@/components/userlib/UserGameListItem";
 import apiService from "@/services/apiService";
 import { getUserId } from "@/lib/actions";
 
-export type GameType ={
+export type GameType = {
     id: string;
     title: string;
     price: number;
@@ -21,10 +21,26 @@ export type OrderType = {
     status: string;
 }
 
+export type UserDetailType = {
+    id: string;
+    username: string;
+    avatar_url: string;
+}
+
 const UserLibPage = () => {
     const [userId, setUserId] = useState<string | null>(null);
+    const [userDetail, setUserDetail] = useState<UserDetailType | null>(null);
     const [orders, setOrders] = useState<OrderType[]>([]);
     const [filter, setFilter] = useState<'ALL' | 'PAID' | 'REFUNDED' | 'WL'>('ALL');
+
+    const getUserDetail = async (userId: string) => {
+        try {
+            const response = await apiService.get(`/api/auth/${userId}/`);
+            setUserDetail(response);
+        } catch (error) {
+            console.error("Error fetching user details:", error);
+        }
+    };
 
     const getOrders = async () => {
         try {
@@ -35,16 +51,17 @@ const UserLibPage = () => {
         }
     };
     
-    useEffect(() =>{
+    useEffect(() => {
         const fetchUserId = async () => {
             const id = await getUserId();
             setUserId(id);
         };
         fetchUserId();
-    }, [])
+    }, []);
 
     useEffect(() => {
         if (userId !== null) {
+            getUserDetail(userId);
             getOrders();
             setFilter('PAID');
         }
@@ -62,15 +79,24 @@ const UserLibPage = () => {
             {/* Header Section */}
             <div className="flex items-center p-3 sm:p-4 bg-gray-800 rounded-lg">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-600 flex items-center justify-center relative overflow-hidden aspect-square rounded-xl">
-                    <Image
-                        fill
-                        src="/image_error.jpg"
-                        className="hover:scale-110 object-cover transition h-full w-full"
-                        alt="User Profile"
-                    />
+                    {userDetail ? (
+                        <Image
+                            fill
+                            src={userDetail.avatar_url || '/defaultavatar.jpg'}
+                            className="hover:scale-110 object-cover transition h-full w-full"
+                            alt="User Profile"
+                        />
+                    ) : (
+                        <Image
+                            fill
+                            src="/image_error.jpg"
+                            className="hover:scale-110 object-cover transition h-full w-full"
+                            alt="User Profile"
+                        />
+                    )}
                 </div>
                 <h1 className="ml-3 sm:ml-4 text-xl sm:text-2xl font-bold text-white truncate">
-                    use
+                    {userDetail ? userDetail.username : 'Loading...'}
                 </h1>
             </div>
 
@@ -113,10 +139,10 @@ const UserLibPage = () => {
                     <button 
                         onClick={() => setFilter('WL')}
                         className={`w-[160px] px-4 py-2 rounded text-white ${filter === 'WL' ? 'bg-blue-600' : 'bg-gray-800'}`}
-                        >
-                            Wish List
+                    >
+                        Wish List
                     </button>
-                    </div>
+                </div>
             </div>
 
             {/* Search Bar */}

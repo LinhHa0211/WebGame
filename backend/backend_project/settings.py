@@ -28,6 +28,12 @@ SITE_ID = 1
 
 WEBSITE_URL = 'http://localhost:8000'
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
+}
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
@@ -72,6 +78,8 @@ USE_TZ = True
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -81,6 +89,7 @@ INSTALLED_APPS = [
     # my apps
     'apps.game',
     'apps.useraccount',
+    'apps.chat',
     #third-party apps
     'rest_framework',
     'rest_framework.authtoken',
@@ -96,6 +105,8 @@ INSTALLED_APPS = [
     'corsheaders',
     
     'django_cleanup',
+    
+    
 ]
 
 MIDDLEWARE = [
@@ -129,6 +140,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend_project.wsgi.application'
+ASGI_APPLICATION = 'backend_project.asgi.application'
 
 
 # Database

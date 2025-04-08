@@ -17,12 +17,15 @@ const PublisherDetailPage = async ({ params }: {params: {id: string}}) => {
                             src={publisher.avatar_url || '/defaultavatar.jpg'}
                             width={200}
                             height={200}
-                            alt="Publisher Name"
+                            alt="Publisher Avatar"
                             className="rounded-full"
                         />
-                        <h1 className="mt-6 text-2xl">{publisher.name}</h1>
+                        <h1 className="mt-6 text-2xl">{publisher.username}</h1>
                         {userId != publisher_id && (
-                            <ContactButton/>
+                            <ContactButton
+                                userId={userId}
+                                publisherId={params.id}
+                            />
                         )}
                     </div>
                 </aside>

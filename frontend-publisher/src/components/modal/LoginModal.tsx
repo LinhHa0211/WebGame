@@ -17,7 +17,7 @@ const LoginModal = () => {
         const formData = {
             email: email,
             password: password,
-            role: 'PUBLISHER'
+            role: 'USER'  // Specify role for User project
         };
         try {
             const response = await apiService.postWithoutToken('/api/auth/login/', JSON.stringify(formData));
@@ -62,7 +62,7 @@ const LoginModal = () => {
                 ))}
                 <CustomButton
                     label="Submit"
-                    className="bg-webgame hover:bg-webgame-dark"
+                    className="w-full bg-webgame hover:bg-webgame-dark"
                     onClick={submitLogin}
                 />
             </form>

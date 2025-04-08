@@ -18,11 +18,9 @@ class CustomUserManager(UserManager):
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
-    name = models.CharField(max_length=255, blank=True, null=True)
     username = models.CharField(
         max_length=150,
         unique=True,
-        default=''
     )
     avatar = models.ImageField(upload_to='uploads/avatars')
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='USER')
@@ -47,7 +45,6 @@ class User(AbstractUser):
             return ''
         
     def save(self, *args, **kwargs):
-        self.username = self.email
         if self.password and not self.password.startswith('pbkdf2_sha256$'):
             self.set_password(self.password)
         super().save(*args, **kwargs)

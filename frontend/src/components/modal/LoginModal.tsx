@@ -62,7 +62,7 @@ const LoginModal = () => {
                 ))}
                 <CustomButton
                     label="Submit"
-                    className="bg-webgame hover:bg-webgame-dark"
+                    className="w-full bg-webgame hover:bg-webgame-dark"
                     onClick={submitLogin}
                 />
             </form>
