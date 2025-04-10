@@ -17,7 +17,7 @@ const LoginModal = () => {
         const formData = {
             email: email,
             password: password,
-            role: 'USER'  // Specify role for User project
+            role: 'PUBLISHER'  // Specify role for User project
         };
         try {
             const response = await apiService.postWithoutToken('/api/auth/login/', JSON.stringify(formData));

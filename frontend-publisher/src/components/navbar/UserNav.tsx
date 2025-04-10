@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import MenuLink from "./MenuLink";
 import useLoginModal from "@/hooks/useLoginModal";
 import useSignupModal from "@/hooks/useSignupModal";
@@ -21,6 +22,8 @@ interface OperatingSystem {
 }
 
 const UserNav: React.FC<UserNavProps> = ({ userId }) => {
+    const router = useRouter();
+
     const loginModal = useLoginModal();
     const signupModal = useSignupModal();
     
@@ -160,19 +163,22 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                                     <MenuLink
                                         label="My profile"
                                         onClick={() => {
-                                            window.location.href = '/myprofile'
+                                            setIsOpen(false);
+                                            router.push('/myprofile')
                                         }}
                                     />
                                     <MenuLink
                                         label="Library"
                                         onClick={() => {
-                                            window.location.href = '/userlib'
+                                            setIsOpen(false);
+                                            router.push('/userlib')
                                         }}
                                     />
                                     <MenuLink
                                         label="Inbox"
                                         onClick={() => {
-                                            window.location.href = '/inbox'
+                                            setIsOpen(false);
+                                            router.push('/inbox')
                                         }}
                                     />
                                 </>
@@ -250,15 +256,22 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                                 </div>
                             )}
                         </div>
-
-                        <MenuLink
-                            label="About"
-                            onClick={() => setIsOpen(false)}
-                        />
-                        <MenuLink
-                            label="Contact"
-                            onClick={() => setIsOpen(false)}
-                        />
+                        <div className="dropdown-container relative">
+                            <MenuLink
+                                label="About"
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    router.push('/about')
+                                }}
+                            />
+                            <MenuLink
+                                label="Contact"
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    router.push('/contact')
+                                }}
+                            />
+                        </div>
                     </div>
 
                     {/* Desktop Dropdown */}
@@ -270,19 +283,22 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                                 <MenuLink
                                     label="My profile"
                                     onClick={() => {
-                                        window.location.href = '/myprofile'
+                                        setIsOpen(false);
+                                        router.push('/myprofile')
                                     }}
                                 />
                                 <MenuLink
                                     label="Library"
                                     onClick={() => {
-                                        window.location.href = '/userlib'
+                                        setIsOpen(false);
+                                        router.push('/userlib')
                                     }}
                                 />
                                 <MenuLink
                                     label="Inbox"
                                     onClick={() => {
-                                        window.location.href = '/inbox'
+                                        setIsOpen(false);
+                                        router.push('/inbox')
                                     }}
                                 />
                             </>

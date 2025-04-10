@@ -1,4 +1,6 @@
 'use client'
+
+import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import apiService from "@/services/apiService";
 
@@ -127,10 +129,10 @@ const MenuItem = () => {
                         )}
                     </div>
                     <div className="w-[150px] h-[48px] lg:h-[64] items-center justify-center flex flex-row gap-2 rounded-xl hover:bg-gray-100 cursor-pointer">
-                        <p className="text-lg">About</p>
+                        <Link href={'/about'} className="text-lg">About</Link>
                     </div>
                     <div className="w-[150px] h-[48px] lg:h-[64] items-center justify-center flex flex-row gap-2 rounded-xl hover:bg-gray-100 cursor-pointer">
-                        <p className="text-lg">Contact</p>
+                        <Link href={'/contact'} className="text-lg">Contact</Link>
                     </div>
                 </div>
             </div>

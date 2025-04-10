@@ -5,6 +5,7 @@ import useLoginModal from "@/hooks/useLoginModal";
 import useSignupModal from "@/hooks/useSignupModal";
 import LogoutButton from "../button/LogoutButton";
 import apiService from "@/services/apiService";
+import { useRouter } from "next/navigation";
 
 interface UserNavProps {
     userId?: string | null;
@@ -21,6 +22,8 @@ interface OperatingSystem {
 }
 
 const UserNav: React.FC<UserNavProps> = ({ userId }) => {
+    const router = useRouter()
+
     const loginModal = useLoginModal();
     const signupModal = useSignupModal();
     
@@ -160,7 +163,8 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                                     <MenuLink
                                         label="Manage"
                                         onClick={() => {
-                                            window.location.href = '/manage'
+                                            setIsOpen(false);
+                                            router.push('/manage')
                                         }}
                                     />
                                 </>
@@ -239,14 +243,22 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                             )}
                         </div>
 
-                        <MenuLink
-                            label="About"
-                            onClick={() => setIsOpen(false)}
-                        />
-                        <MenuLink
-                            label="Contact"
-                            onClick={() => setIsOpen(false)}
-                        />
+                        <div className="dropdown-container relative">
+                            <MenuLink
+                                label="About"
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    router.push('/about')
+                                }}
+                            />
+                            <MenuLink
+                                label="Contact"
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    router.push('/contact')
+                                }}
+                            />
+                        </div>
                     </div>
 
                     {/* Desktop Dropdown */}
@@ -258,7 +270,7 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                                 <MenuLink
                                     label="Manage"
                                     onClick={() => {
-                                        window.location.href = '/manage'
+                                        router.push('/manage')
                                     }}
                                 />
                             </>
