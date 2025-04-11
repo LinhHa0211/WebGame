@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, OperatingSystem, Game, CategoryDetail, OperatingSystemDetail, Promotion, PromotionDetail, Image, Order
+from .models import Category, OperatingSystem, Game, CategoryDetail, OperatingSystemDetail, Promotion, PromotionDetail, Image, Order, Rating
 
 # Register your models here.
 admin.site.register(Category)
@@ -11,3 +11,4 @@ admin.site.register(Promotion)
 admin.site.register(PromotionDetail)
 admin.site.register(Image)
 admin.site.register(Order)
+admin.site.register(Rating)

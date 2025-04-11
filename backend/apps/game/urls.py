@@ -17,4 +17,6 @@ urlpatterns = [
     path('<uuid:userId>/order/', api.user_game_list, name='api_user_game_list'),
     path('order/<uuid:game_id>/', api.order_game, name='api_game_order'),
     path('<uuid:gameId>/toggle_favorite/', api.toggle_favorite, name='api_toggle_favorite'),
+    path('<uuid:game_id>/ratings/', api.game_ratings, name='api_game_ratings'),
+    path('<uuid:game_id>/rate/', api.rate_game, name='api_rate_game'),
 ]

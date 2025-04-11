@@ -3,6 +3,8 @@ import Link from 'next/link';
 import OrderBar from '@/components/game/OrderBar';
 import CategorySidebar from '@/components/game/CategorySidebar';
 import OperatingSystemSidebar from '@/components/game/OperatingSystemSidebar';
+import InfoSidebar from '@/components/game/InfoSidebar';
+import Rating from '@/components/game/Rating';
 import apiService from '@/services/apiService';
 import ImageGallery from '@/components/imagegallery/ImageGallery';
 import { getUserId } from '@/lib/actions';
@@ -18,6 +20,15 @@ interface PromotionDetails {
   promotion_end: string;
 }
 
+interface RatingData {
+  id: string;
+  user: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 interface Game {
   id: string;
   title: string;
@@ -26,8 +37,11 @@ interface Game {
   description: string;
   price: number;
   publish_year: string;
-  create_at?: string; // Optional, as it's missing in the response
-  promotion_details?: PromotionDetails; // Optional, as it's missing currently
+  create_at?: string;
+  promotion_details?: PromotionDetails;
+  avg_rating: number;
+  ratings: RatingData[];
+  purchase_count: number;
 }
 
 interface GameResponse {
@@ -39,8 +53,7 @@ interface GameDetailPageProps {
 }
 
 const GameDetailPage = async ({ params }: GameDetailPageProps) => {
-  const userId = await getUserId()
-
+  const userId = await getUserId();
   const game: GameResponse = await apiService.get(`/api/game/${params.id}`);
   if (!game) {
     return <div>Loading...</div>;
@@ -63,10 +76,7 @@ const GameDetailPage = async ({ params }: GameDetailPageProps) => {
             <ImageGallery gameId={game.data.id} />
           </span>
           <hr />
-          <Link 
-            href={`/publisher/${game.data.publisher.id}`}
-            className="py-6 flex items-center space-x-4"
-          >
+          <Link href={`/publisher/${game.data.publisher.id}`} className="py-6 flex items-center space-x-4">
             <Image
               src={game.data.publisher.avatar_url || '/image_error.jpg'}
               width={80}
@@ -74,7 +84,7 @@ const GameDetailPage = async ({ params }: GameDetailPageProps) => {
               className="rounded-full border border-gray-300"
               alt="The publisher name"
             />
-            <p className='text-xl'>
+            <p className="text-xl">
               <strong>{game.data.publisher.username}</strong>
             </p>
           </Link>
@@ -83,22 +93,26 @@ const GameDetailPage = async ({ params }: GameDetailPageProps) => {
           <OrderBar
             userId={userId}
             game={{
-                id: game.data.id,
-                title: game.data.title,
-                price: game.data.price,
+              id: game.data.id,
+              title: game.data.title,
+              price: game.data.price,
             }}
           />
           <hr />
           <p className="mt-6 text-lg">{game.data.description}</p>
         </div>
         <aside className="mt-6 p-6 col-span-2">
-          <CategorySidebar
-            id={game.data.id}
+          <InfoSidebar
+            publishYear={game.data.publish_year}
+            purchaseCount={game.data.purchase_count}
+            avg_rating={game.data.avg_rating}
           />
-          <OperatingSystemSidebar
-            id={game.data.id}
-          />
+          <CategorySidebar id={game.data.id} />
+          <OperatingSystemSidebar id={game.data.id} />
         </aside>
+      </div>
+      <div className='border rounded-xl p-5 bg-gray-100'>
+        <Rating id={game.data.id} avgRating={game.data.avg_rating} />
       </div>
     </main>
   );
