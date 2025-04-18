@@ -19,6 +19,7 @@ export type OrderType = {
     buy_at: Date;
     total_price: number;
     status: string;
+    refund_description?: string; // Add refund_description
 }
 
 export type UserDetailType = {
@@ -31,7 +32,7 @@ const UserLibPage = () => {
     const [userId, setUserId] = useState<string | null>(null);
     const [userDetail, setUserDetail] = useState<UserDetailType | null>(null);
     const [orders, setOrders] = useState<OrderType[]>([]);
-    const [filter, setFilter] = useState<'ALL' | 'PAID' | 'REFUNDED' | 'WL'>('ALL');
+    const [filter, setFilter] = useState<'ALL' | 'PAID' | 'REFUNDED' | 'REJECTED' | 'WL'>('ALL');
 
     const getUserDetail = async (userId: string) => {
         try {
@@ -49,6 +50,15 @@ const UserLibPage = () => {
         } catch (error) {
             console.error("Error fetching orders:", error);
         }
+    };
+
+    // Callback to update an order in the state
+    const updateOrder = (updatedOrder: OrderType) => {
+        setOrders((prevOrders) =>
+            prevOrders.map((order) =>
+                order.id === updatedOrder.id ? { ...order, ...updatedOrder } : order
+            )
+        );
     };
     
     useEffect(() => {
@@ -71,7 +81,7 @@ const UserLibPage = () => {
     const filteredOrders = filter === 'ALL'
         ? orders 
         : filter === 'REFUNDED'
-        ? orders.filter(order => order.status === 'REFUNDED' || order.status === 'PROCESSING')
+        ? orders.filter(order => order.status === 'REFUNDED' || order.status === 'PROCESSING' || order.status === 'REJECTED')
         : orders.filter(order => order.status === filter);
 
     return (
@@ -105,7 +115,7 @@ const UserLibPage = () => {
                 {/* Dropdown for mobile */}
                 <div className="block sm:hidden">
                     <select
-                        onChange={(e) => setFilter(e.target.value as 'PAID' | 'REFUNDED' | 'WL')}
+                        onChange={(e) => setFilter(e.target.value as 'PAID' | 'REFUNDED' | 'REJECTED' | 'WL')}
                         className="w-full p-2 bg-gray-800 text-white rounded border border-gray-700 focus:outline-none appearance-none"
                         style={{
                             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white' stroke-width='1.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E")`,
@@ -173,14 +183,13 @@ const UserLibPage = () => {
 
             {/* Game Cards */}
             <div className="space-y-4">
-                {filteredOrders.map((order) => {
-                    return (
-                        <UserGameListItem
-                            key={order.id}
-                            order={order}
-                        />
-                    )
-                })}
+                {filteredOrders.map((order) => (
+                    <UserGameListItem
+                        key={order.id}
+                        order={order}
+                        updateOrder={updateOrder} // Pass updateOrder callback
+                    />
+                ))}
             </div>
         </main>
     );

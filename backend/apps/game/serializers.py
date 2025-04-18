@@ -19,7 +19,19 @@ class GameDetailSerializer(serializers.ModelSerializer):
     publisher = UserDetailSerializer()
     class Meta:
         model = Game
-        fields = ['id', 'title', 'description', 'price', 'publisher', 'image_url', 'publish_year', 'avg_rating', 'ratings', 'purchase_count']
+        fields = ['id', 'title', 'description', 'price', 'publisher', 'image_url', 'publish_year', 'avg_rating', 'ratings', 'purchase_count', 'approval', 'approval_description']
+    
+    def get_purchase_count(self, obj):
+        return obj.get_purchase_count()
+
+class GameListSerializer(serializers.ModelSerializer):
+    ratings = RatingSerializer(many=True, read_only=True)
+    avg_rating = serializers.FloatField(read_only=True)
+    purchase_count = serializers.SerializerMethodField()
+    publisher = UserDetailSerializer()
+    class Meta:
+        model = Game
+        fields = ['id', 'title', 'description', 'price', 'publisher', 'image_url', 'publish_year', 'avg_rating', 'ratings', 'purchase_count', 'approval', 'approval_description']
     
     def get_purchase_count(self, obj):
         return obj.get_purchase_count()
@@ -45,18 +57,23 @@ class PromotionSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'start_day', 'end_day']
 
 class PromotionDetailSerializer(serializers.ModelSerializer):
+    promotion = PromotionSerializer()
+    game = GameDetailSerializer()
     class Meta:
         model = PromotionDetail
-        fields = ['id', 'discount', 'promotion']
+        fields = ['id', 'discount', 'promotion', 'game']
 
 class OrderSerializer(serializers.ModelSerializer):
+    game = GameDetailSerializer()
+    user = UserDetailSerializer()
     class Meta:
         model = Order
-        fields = ['id', 'user', 'game', 'buy_at', 'total_price', 'status']
+        fields = ['id', 'user', 'game', 'buy_at', 'total_price', 'status', 'refund_description']
 
 class OrderListSerializer(serializers.ModelSerializer):
+    user = UserDetailSerializer()  # Added user field
     game = GameSerializer()
     class Meta:
         model = Order
-        fields = ['id', 'game', 'buy_at', 'total_price', 'status']
+        fields = ['id', 'user', 'game', 'buy_at', 'total_price', 'status', 'refund_description']
 

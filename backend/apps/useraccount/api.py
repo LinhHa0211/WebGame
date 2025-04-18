@@ -1,9 +1,12 @@
 from django.http import JsonResponse
 
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAdminUser
+from rest_framework.authentication import TokenAuthentication
 
 from .models import User
 from .serializers import UserDetailSerializer
+
 
 @api_view(['GET'])
 @authentication_classes([])
@@ -79,7 +82,7 @@ def user_register(request):
         username = request.data.get('userName')  # Matches the frontend field name
         password1 = request.data.get('password1')
         password2 = request.data.get('password2')
-
+        role = request.data.get('role')
         # Log the request data for debugging
         print('Request Data:', request.data)
 
@@ -114,7 +117,7 @@ def user_register(request):
         user = User.objects.create(
             email=email,
             username=username,
-            role='USER'  # Default role for new users
+            role=role
         )
         user.set_password(password1)  # Hash the password
         user.save()
@@ -142,3 +145,51 @@ def user_register(request):
             {'non_field_errors': [str(e)]},
             status=500
         )
+        
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def get_users(request):
+    try:
+        users = User.objects.all()
+        serializer = UserDetailSerializer(users, many=True)
+        return JsonResponse({'data': serializer.data})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def delete_user(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        user.delete()
+        return JsonResponse({'success': True})
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def user_update(request, userId):
+    try:
+        user = User.objects.get(id=userId)
+
+        # Update fields
+        user.username = request.POST.get('username', user.username)
+        user.is_active = request.POST.get('is_active', str(user.is_active)).lower() == 'true'
+
+        # Handle avatar upload
+        if 'avatar' in request.FILES:
+            user.avatar = request.FILES['avatar']
+
+        user.save()
+
+        serializer = UserDetailSerializer(user)
+        return JsonResponse({'success': True, 'data': serializer.data}, status=200)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

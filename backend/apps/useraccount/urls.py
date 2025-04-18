@@ -12,4 +12,7 @@ urlpatterns = [
     path('login/', api.user_login, name='api_user_login'),
     path('logout/', LogoutView.as_view(), name='rest_logout'),
     path('<uuid:userId>/', api.user_detail, name='api_user_detail'),
+    path('users/', api.get_users, name='get_users'),
+    path('users/<str:user_id>/delete/', api.delete_user, name='delete_user'),
+    path('users/<uuid:userId>/update/', api.user_update, name='api_user_update'),
 ]

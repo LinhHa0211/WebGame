@@ -36,6 +36,7 @@ class Game(models.Model):
     image = models.ImageField(upload_to='uploads/games', null=True, blank=True)
     publish_year = models.DateField()
     approval = models.CharField(max_length=10, choices=GAME_APPROVAL_CHOICES, default='PENDING')
+    approval_description = models.TextField(blank=True, default='')
     avg_rating = models.FloatField(default=0.0)
     
     def image_url(self):
@@ -127,6 +128,7 @@ class Order(models.Model):
     buy_at = models.DateTimeField(default=timezone.now)
     total_price = models.FloatField()
     status = models.CharField(max_length=10, choices=ORDER_STATUS_CHOICES, default='PAID')
+    refund_description = models.TextField(blank=True, default='')
     
     def __str__(self):
         return f"Games {self.game.title} of: {self.user.username}"

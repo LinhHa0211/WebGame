@@ -15,5 +15,6 @@ ORDER_STATUS_CHOICES = [
     ('PAID', 'Paid'),
     ('PROCESSING', 'Processing'),
     ('REFUNDED', 'Refunded'),
+    ('REJECTED', 'Rejected'),
     ('WL', 'WishList')
 ]

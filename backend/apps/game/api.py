@@ -2,8 +2,8 @@ from django.utils import timezone
 from django.http import Http404, JsonResponse
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from .models import Game, Category, OperatingSystem, CategoryDetail, OperatingSystemDetail, Image, Promotion, PromotionDetail, Order, Rating
-from .serializers import GameSerializer, CategorySerializer, OperatingSystemSerializer, GameDetailSerializer, ImageSerializer, PromotionDetailSerializer, PromotionSerializer, OrderSerializer, OrderListSerializer, RatingSerializer
+from .models import *
+from .serializers import *
 from .form import GameForm
 
 @api_view(['GET'])
@@ -14,8 +14,100 @@ def game_list(request):
     publisher_id = request.GET.get('publisher_id', '')
     if publisher_id:
         games = games.filter(publisher_id=publisher_id)
-    serializer = GameSerializer(games, many=True)
+    games = games.filter(approval='APPROVED')
+    serializer = GameDetailSerializer(games, many=True)
     return JsonResponse({'data': serializer.data})
+
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def game_list_manage(request):
+    games = Game.objects.all()
+    publisher_id = request.GET.get('publisher_id', '')
+    if publisher_id:
+        games = games.filter(publisher_id=publisher_id)
+    serializer = GameDetailSerializer(games, many=True)
+    return JsonResponse({'data': serializer.data})
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def delete_game(request, game_id):
+    try:
+        game = Game.objects.get(id=game_id)
+        game.delete()
+        return JsonResponse({'success': True})
+    except Game.DoesNotExist:
+        return JsonResponse({'error': 'Game not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+from django.utils.dateparse import parse_date
+import logging
+
+logger = logging.getLogger(__name__)
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def update_game(request, game_id):
+    try:
+        game = Game.objects.get(id=game_id)
+        game.title = request.POST.get('title', game.title)
+        game.description = request.POST.get('description', game.description)
+        price_str = request.POST.get('price', game.price)
+        try:
+            game.price = float(price_str)
+        except (ValueError, TypeError):
+            return JsonResponse({'error': 'Invalid price format'}, status=400)
+        game.approval = request.POST.get('approval', game.approval)
+        game.approval_description = request.POST.get('approval_description', game.approval_description)
+        publish_year_str = request.POST.get('publish_year', None)
+        if publish_year_str:
+            parsed_date = parse_date(publish_year_str)
+            if parsed_date:
+                game.publish_year = parsed_date
+            else:
+                return JsonResponse({'error': 'Invalid publish year format'}, status=400)
+        if 'image' in request.FILES:
+            game.image = request.FILES['image']
+        game.save()
+
+        # Clear and update categories
+        category_ids = request.POST.getlist('category_ids[]')
+        CategoryDetail.objects.filter(game=game).delete()
+        for category_id in category_ids:
+            try:
+                category = Category.objects.get(id=category_id)
+                CategoryDetail.objects.create(game=game, category=category)
+            except Category.DoesNotExist:
+                logger.warning(f"Category ID {category_id} not found, skipping.")
+                continue
+            except Exception as e:
+                logger.error(f"Error creating CategoryDetail for category {category_id}: {str(e)}")
+                return JsonResponse({'error': f'Failed to add category {category_id}: {str(e)}'}, status=400)
+
+        # Clear and update operating systems
+        operating_system_ids = request.POST.getlist('operating_system_ids[]')
+        OperatingSystemDetail.objects.filter(game=game).delete()
+        for os_id in operating_system_ids:
+            try:
+                operating_system = OperatingSystem.objects.get(id=os_id)
+                OperatingSystemDetail.objects.create(game=game, operating_system=operating_system)
+            except OperatingSystem.DoesNotExist:
+                logger.warning(f"Operating System ID {os_id} not found, skipping.")
+                continue
+            except Exception as e:
+                logger.error(f"Error creating OperatingSystemDetail for OS {os_id}: {str(e)}")
+                return JsonResponse({'error': f'Failed to add operating system {os_id}: {str(e)}'}, status=400)
+
+        serializer = GameDetailSerializer(game)
+        return JsonResponse({'success': True, 'data': serializer.data}, status=200)
+    except Game.DoesNotExist:
+        return JsonResponse({'error': 'Game not found'}, status=404)
+    except Exception as e:
+        logger.error(f"Error in update_game for game_id {game_id}: {str(e)}")
+        return JsonResponse({'error': f'Internal server error: {str(e)}'}, status=500)
 
 @api_view(['GET'])
 @authentication_classes([])
@@ -28,7 +120,19 @@ def user_game_list(request, userId):
     except Exception as e:
         print("Error fetching user orders:", e)
         return JsonResponse({'error': str(e)}, status=500)
-
+    
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def publisher_game_list(request, userId):
+    try:
+        games = Game.objects.filter(publisher=userId)
+        serializer = GameListSerializer(games, many=True)
+        return JsonResponse({'data': serializer.data})
+    except Exception as e:
+        print("Error fetching user orders:", e)
+        return JsonResponse({'error': str(e)}, status=500)
+    
 @api_view(['GET'])
 @authentication_classes([])
 @permission_classes([])
@@ -67,6 +171,60 @@ def category_game_list(request, gameId):
         raise Http404("Game not found")
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def create_category(request):
+    try:
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        if not title or not description:
+            return JsonResponse({'error': 'Title and description are required'}, status=400)
+
+        category = Category.objects.create(
+            title=title,
+            description=description,
+        )
+        if 'image' in request.FILES:
+            category.image = request.FILES['image']
+        category.save()
+
+        serializer = CategorySerializer(category)
+        return JsonResponse({'success': True, 'data': serializer.data}, status=201)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def update_category(request, category_id):
+    try:
+        category = Category.objects.get(id=category_id)
+        category.title = request.POST.get('title', category.title)
+        category.description = request.POST.get('description', category.description)
+        if 'image' in request.FILES:
+            category.image = request.FILES['image']
+        category.save()
+        serializer = CategorySerializer(category)
+        return JsonResponse({'success': True, 'data': serializer.data}, status=200)
+    except Category.DoesNotExist:
+        return JsonResponse({'error': 'Category not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def delete_category(request, category_id):
+    try:
+        category = Category.objects.get(id=category_id)
+        category.delete()
+        return JsonResponse({'success': True})
+    except Category.DoesNotExist:
+        return JsonResponse({'error': 'Category not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 @api_view(['GET'])
 @authentication_classes([])
@@ -93,6 +251,49 @@ def operatingSystem_game_list(request, gameId):
         return JsonResponse({'data': serializer.data}, status=200)
     except Game.DoesNotExist:
         raise Http404("Game not found")
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def create_operating_system(request):
+    try:
+        title = request.POST.get('title')
+        if not title:
+            return JsonResponse({'error': 'Title is required'}, status=400)
+
+        operating_system = OperatingSystem.objects.create(title=title)
+        serializer = OperatingSystemSerializer(operating_system)
+        return JsonResponse({'success': True, 'data': serializer.data}, status=201)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def update_operating_system(request, os_id):
+    try:
+        operating_system = OperatingSystem.objects.get(id=os_id)
+        operating_system.title = request.POST.get('title', operating_system.title)
+        operating_system.save()
+        serializer = OperatingSystemSerializer(operating_system)
+        return JsonResponse({'success': True, 'data': serializer.data}, status=200)
+    except OperatingSystem.DoesNotExist:
+        return JsonResponse({'error': 'Operating System not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def delete_operating_system(request, os_id):
+    try:
+        operating_system = OperatingSystem.objects.get(id=os_id)
+        operating_system.delete()
+        return JsonResponse({'success': True})
+    except OperatingSystem.DoesNotExist:
+        return JsonResponse({'error': 'Operating System not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
@@ -142,6 +343,127 @@ def game_promotion(request, game_id):
         raise Http404("Game not found")
     except Exception as e:
         return JsonResponse({'data': None})
+    
+# Promotion Endpoints
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def promotion_list(request):
+    try:
+        promotions = Promotion.objects.all()
+        serializer = PromotionSerializer(promotions, many=True)
+        return JsonResponse({'data': serializer.data})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def promotion_details(request, promotion_id):
+    try:
+        promotion = Promotion.objects.get(id=promotion_id)
+        details = PromotionDetail.objects.filter(promotion=promotion)
+        serializer = PromotionDetailSerializer(details, many=True)
+        return JsonResponse({'data': serializer.data})
+    except Promotion.DoesNotExist:
+        return JsonResponse({'error': 'Promotion not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def create_promotion(request):
+    try:
+        title = request.POST.get('title')
+        end_day = request.POST.get('end_day')
+        game_ids = request.POST.getlist('game_ids[]')  # Expecting a list of game IDs
+        discounts = request.POST.getlist('discounts[]')  # Expecting a list of discounts
+
+        if not title or not end_day:
+            return JsonResponse({'error': 'Title and end day are required'}, status=400)
+        if not game_ids or not discounts or len(game_ids) != len(discounts):
+            return JsonResponse({'error': 'Game IDs and discounts must be provided and match in length'}, status=400)
+
+        # Create the Promotion
+        promotion = Promotion.objects.create(
+            title=title,
+            end_day=end_day,
+        )
+
+        # Validate and create PromotionDetail entries
+        for game_id, discount in zip(game_ids, discounts):
+            try:
+                game = Game.objects.get(id=game_id)
+                discount_value = float(discount)
+                if discount_value <= 0 or discount_value > 100:
+                    return JsonResponse({'error': f'Invalid discount for game {game_id}: must be between 0 and 100'}, status=400)
+                PromotionDetail.objects.create(
+                    promotion=promotion,
+                    game=game,
+                    discount=discount_value,
+                )
+            except Game.DoesNotExist:
+                return JsonResponse({'error': f'Game not found: {game_id}'}, status=404)
+            except ValueError:
+                return JsonResponse({'error': f'Invalid discount value for game {game_id}'}, status=400)
+
+        serializer = PromotionSerializer(promotion)
+        return JsonResponse({'success': True, 'data': serializer.data}, status=201)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def update_promotion(request, promotion_id):
+    try:
+        promotion = Promotion.objects.get(id=promotion_id)
+        promotion.title = request.POST.get('title', promotion.title)
+        promotion.end_day = request.POST.get('end_day', promotion.end_day)
+        promotion.save()
+
+        game_ids = request.POST.getlist('game_ids[]')
+        discounts = request.POST.getlist('discounts[]')
+
+        if game_ids and discounts and len(game_ids) == len(discounts):
+            # Delete existing PromotionDetails and create new ones
+            PromotionDetail.objects.filter(promotion=promotion).delete()
+            for game_id, discount in zip(game_ids, discounts):
+                try:
+                    game = Game.objects.get(id=game_id)
+                    discount_value = float(discount)
+                    if discount_value <= 0 or discount_value > 100:
+                        return JsonResponse({'error': f'Invalid discount for game {game_id}: must be between 0 and 100'}, status=400)
+                    PromotionDetail.objects.create(
+                        promotion=promotion,
+                        game=game,
+                        discount=discount_value,
+                    )
+                except Game.DoesNotExist:
+                    return JsonResponse({'error': f'Game not found: {game_id}'}, status=404)
+                except ValueError:
+                    return JsonResponse({'error': f'Invalid discount value for game {game_id}'}, status=400)
+
+        serializer = PromotionSerializer(promotion)
+        return JsonResponse({'success': True, 'data': serializer.data}, status=200)
+    except Promotion.DoesNotExist:
+        return JsonResponse({'error': 'Promotion not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def delete_promotion(request, promotion_id):
+    try:
+        promotion = Promotion.objects.get(id=promotion_id)
+        promotion.delete()
+        return JsonResponse({'success': True})
+    except Promotion.DoesNotExist:
+        return JsonResponse({'error': 'Promotion not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 @api_view(['POST'])
 def create_game(request):
@@ -218,6 +540,49 @@ def order_game(request, game_id):
     except Exception as e:
         print('Error', e)
         return JsonResponse({'success': False})
+    
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def order_list(request):
+    try:
+        orders = Order.objects.all()
+        serializer = OrderListSerializer(orders, many=True)
+        return JsonResponse({'data': serializer.data})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def update_order(request, order_id):
+    try:
+        order = Order.objects.get(id=order_id)
+        order.total_price = float(request.POST.get('total_price', order.total_price))
+        order.status = request.POST.get('status', order.status)
+        order.refund_description = request.POST.get('refund_description', order.refund_description)
+        order.save()
+        serializer = OrderListSerializer(order)
+        return JsonResponse({'success': True, 'data': serializer.data}, status=200)
+    except Order.DoesNotExist:
+        return JsonResponse({'error': 'Order not found'}, status=404)
+    except ValueError:
+        return JsonResponse({'error': 'Invalid total price'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def delete_order(request, order_id):
+    try:
+        order = Order.objects.get(id=order_id)
+        order.delete()
+        return JsonResponse({'success': True})
+    except Order.DoesNotExist:
+        return JsonResponse({'error': 'Order not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 @api_view(['POST'])
 def toggle_favorite(request, gameId):

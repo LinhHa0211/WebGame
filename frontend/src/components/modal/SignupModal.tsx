@@ -22,7 +22,8 @@ const SignupModal = () => {
             email: email,
             userName: userName,
             password1: password1,
-            password2: password2
+            password2: password2,
+            role: 'USER'
         };
         console.log('Form Data:', formData); // Debug log to verify form data
 

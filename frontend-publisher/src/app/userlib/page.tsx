@@ -5,20 +5,19 @@ import Image from "next/image";
 import UserGameListItem from "@/components/userlib/UserGameListItem";
 import apiService from "@/services/apiService";
 import { getUserId } from "@/lib/actions";
+import useAddGameModal from "@/hooks/useAddGameModal";
 
 export type GameType = {
     id: string;
     title: string;
     price: number;
     image_url: string;
-}
-
-export type OrderType = {
-    id: string;
-    game: GameType;
-    buy_at: Date;
-    total_price: number;
-    status: string;
+    publish_year: string; // Changed from number to string to match API and form
+    purchase_count: number;
+    avg_rating: number;
+    approval: string;
+    approval_description?: string;
+    description: string;
 }
 
 export type UserDetailType = {
@@ -27,11 +26,24 @@ export type UserDetailType = {
     avatar_url: string;
 }
 
+export type CategoryType = {
+    id: string;
+    title: string;
+}
+
+export type OperatingSystemType = {
+    id: string;
+    title: string;
+}
+
 const UserLibPage = () => {
+    const addGameModal = useAddGameModal();
     const [userId, setUserId] = useState<string | null>(null);
     const [userDetail, setUserDetail] = useState<UserDetailType | null>(null);
-    const [orders, setOrders] = useState<OrderType[]>([]);
-    const [filter, setFilter] = useState<'ALL' | 'PAID' | 'REFUNDED' | 'WL'>('ALL');
+    const [games, setGames] = useState<GameType[]>([]);
+    const [categories, setCategories] = useState<CategoryType[]>([]);
+    const [operatingSystems, setOperatingSystems] = useState<OperatingSystemType[]>([]);
+    const [filter, setFilter] = useState<'ALL' | 'APPROVED' | 'PENDING' | 'REJECTED'>('ALL');
 
     const getUserDetail = async (userId: string) => {
         try {
@@ -42,15 +54,47 @@ const UserLibPage = () => {
         }
     };
 
-    const getOrders = async () => {
+    const getGames = async () => {
         try {
-            const tmpOrder = await apiService.get(`/api/game/${userId}/order/`);
-            setOrders(tmpOrder.data);
+            const tmpGame = await apiService.get(`/api/game/${userId}/publishergame/`);
+            setGames(tmpGame.data);
         } catch (error) {
-            console.error("Error fetching orders:", error);
+            console.error("Error fetching games:", error);
         }
     };
-    
+
+    const getCategories = async () => {
+        try {
+            const response = await apiService.get('/api/game/category/');
+            setCategories(response.data);
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+        }
+    };
+
+    const getOperatingSystems = async () => {
+        try {
+            const response = await apiService.get('/api/game/operatingSystem/');
+            setOperatingSystems(response.data);
+        } catch (error) {
+            console.error("Error fetching operating systems:", error);
+        }
+    };
+
+    // Callback to update a game in the state
+    const updateGame = (updatedGame: GameType | null) => {
+        setGames((prevGames) => {
+            if (updatedGame === null) {
+                // Remove game (for deletion)
+                return prevGames.filter((game) => game.id !== prevGames.find(g => g.id === game.id)?.id);
+            }
+            // Update or add game
+            return prevGames.map((game) =>
+                game.id === updatedGame.id ? { ...game, ...updatedGame } : game
+            );
+        });
+    };
+
     useEffect(() => {
         const fetchUserId = async () => {
             const id = await getUserId();
@@ -62,17 +106,17 @@ const UserLibPage = () => {
     useEffect(() => {
         if (userId !== null) {
             getUserDetail(userId);
-            getOrders();
-            setFilter('PAID');
+            getGames();
+            getCategories();
+            getOperatingSystems();
+            setFilter('APPROVED');
         }
     }, [userId]);
 
-    // Filter orders based on current filter state
-    const filteredOrders = filter === 'ALL'
-        ? orders 
-        : filter === 'REFUNDED'
-        ? orders.filter(order => order.status === 'REFUNDED' || order.status === 'PROCESSING')
-        : orders.filter(order => order.status === filter);
+    // Filter games based on current filter state
+    const filteredGames = filter === 'ALL'
+        ? games
+        : games.filter(game => game.approval === filter);
 
     return (
         <main className="max-w-[1500px] mx-auto px-4 sm:px-6 pb-6">
@@ -85,6 +129,7 @@ const UserLibPage = () => {
                             src={userDetail.avatar_url || '/defaultavatar.jpg'}
                             className="hover:scale-110 object-cover transition h-full w-full"
                             alt="User Profile"
+                            sizes="48px"
                         />
                     ) : (
                         <Image
@@ -92,6 +137,7 @@ const UserLibPage = () => {
                             src="/image_error.jpg"
                             className="hover:scale-110 object-cover transition h-full w-full"
                             alt="User Profile"
+                            sizes="48px"
                         />
                     )}
                 </div>
@@ -104,8 +150,16 @@ const UserLibPage = () => {
             <div className="p-4 px-2 border-b border-gray-700">
                 {/* Dropdown for mobile */}
                 <div className="block sm:hidden">
+                    <div>
+                        <button
+                            onClick={() => addGameModal.open()}
+                            className={`w-full px-4 py-2 mb-2 rounded text-white bg-webgame hover:bg-webgame-dark`}
+                        >
+                            Publish New Game
+                        </button>
+                    </div>
                     <select
-                        onChange={(e) => setFilter(e.target.value as 'PAID' | 'REFUNDED' | 'WL')}
+                        onChange={(e) => setFilter(e.target.value as 'APPROVED' | 'PENDING' | 'REJECTED')}
                         className="w-full p-2 bg-gray-800 text-white rounded border border-gray-700 focus:outline-none appearance-none"
                         style={{
                             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white' stroke-width='1.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E")`,
@@ -114,33 +168,39 @@ const UserLibPage = () => {
                             backgroundSize: "1.5em",
                         }}
                     >
-                        <option value="PAID">All Games</option>
-                        <option value="REFUNDED">Refunded</option>
-                        <option value="WL">Wish List</option>
+                        <option value="APPROVED">All Games</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="REJECTED">Rejected</option>
                     </select>
                 </div>
 
                 {/* Buttons for larger screens */}
                 <div className="hidden sm:flex sm:flex-row items-center justify-between space-x-2">
                     <div className="flex space-x-2">
-                        <button 
-                            onClick={() => setFilter('PAID')}
-                            className={`w-[160px] px-4 py-2 rounded text-white ${filter === 'PAID' ? 'bg-blue-600' : 'bg-gray-800'}`}
+                        <button
+                            onClick={() => setFilter('APPROVED')}
+                            className={`w-[160px] px-4 py-2 rounded text-white ${filter === 'APPROVED' ? 'bg-blue-600' : 'bg-gray-800'}`}
                         >
                             All Games
                         </button>
-                        <button 
-                            onClick={() => setFilter('REFUNDED')}
-                            className={`w-[160px] px-4 py-2 rounded text-white ${filter === 'REFUNDED' ? 'bg-blue-600' : 'bg-gray-800'}`}
+                        <button
+                            onClick={() => setFilter('PENDING')}
+                            className={`w-[160px] px-4 py-2 rounded text-white ${filter === 'PENDING' ? 'bg-blue-600' : 'bg-gray-800'}`}
                         >
-                            Refunded Games
+                            Pending Games
+                        </button>
+                        <button
+                            onClick={() => setFilter('REJECTED')}
+                            className={`w-[160px] px-4 py-2 rounded text-white ${filter === 'REJECTED' ? 'bg-blue-600' : 'bg-gray-800'}`}
+                        >
+                            Rejected List
                         </button>
                     </div>
-                    <button 
-                        onClick={() => setFilter('WL')}
-                        className={`w-[160px] px-4 py-2 rounded text-white ${filter === 'WL' ? 'bg-blue-600' : 'bg-gray-800'}`}
+                    <button
+                        onClick={() => addGameModal.open()}
+                        className={`w-[160px] px-4 py-2 rounded text-white bg-webgame hover:bg-webgame-dark`}
                     >
-                        Wish List
+                        Publish New Game
                     </button>
                 </div>
             </div>
@@ -173,14 +233,15 @@ const UserLibPage = () => {
 
             {/* Game Cards */}
             <div className="space-y-4">
-                {filteredOrders.map((order) => {
-                    return (
-                        <UserGameListItem
-                            key={order.id}
-                            order={order}
-                        />
-                    )
-                })}
+                {filteredGames.map((game) => (
+                    <UserGameListItem
+                        key={game.id}
+                        game={game}
+                        updateGame={updateGame}
+                        categories={categories}
+                        operatingSystems={operatingSystems}
+                    />
+                ))}
             </div>
         </main>
     );
