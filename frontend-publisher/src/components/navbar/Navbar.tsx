@@ -3,7 +3,6 @@ import Image from "next/image";
 
 import MenuItem from "./MenuItem";
 import UserNav from "./UserNav";
-import AddGameButton from "./AddGameButton";
 import SearchButton from "./SearchButton";
 import { getUserId } from "@/lib/actions";
 
@@ -20,9 +19,6 @@ const Navbar = async () => {
                         <MenuItem/>
                     </div>
                     <div className="flex items-center space-x-6">
-                        <AddGameButton
-                            userId={userId}
-                        />
                         <SearchButton/>
                         <UserNav
                             userId={userId}
