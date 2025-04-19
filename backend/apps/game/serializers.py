@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Game, Category, OperatingSystem, Image, Promotion, PromotionDetail, Order, Rating
+from .models import *
 from ..useraccount.serializers import UserDetailSerializer
 
 class GameSerializer(serializers.ModelSerializer):
@@ -77,3 +77,25 @@ class OrderListSerializer(serializers.ModelSerializer):
         model = Order
         fields = ['id', 'user', 'game', 'buy_at', 'total_price', 'status', 'refund_description']
 
+class GameSearchSerializer(serializers.ModelSerializer):
+    ratings = RatingSerializer(many=True, read_only=True)
+    avg_rating = serializers.FloatField(read_only=True)
+    purchase_count = serializers.SerializerMethodField()
+    publisher = UserDetailSerializer()
+    category_ids = serializers.SerializerMethodField()
+    operating_system_ids = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Game
+        fields = ['id', 'title', 'description', 'price', 'publisher', 'image_url', 'publish_year', 'avg_rating', 'ratings', 'purchase_count', 'approval', 'approval_description', 'category_ids', 'operating_system_ids']
+
+    def get_purchase_count(self, obj):
+        return obj.get_purchase_count()
+
+    def get_category_ids(self, obj):
+        category_details = CategoryDetail.objects.filter(game=obj)
+        return [str(detail.category.id) for detail in category_details]
+
+    def get_operating_system_ids(self, obj):
+        operating_system_details = OperatingSystemDetail.objects.filter(game=obj)
+        return [str(detail.operating_system.id) for detail in operating_system_details]

@@ -164,7 +164,7 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                                         label="My profile"
                                         onClick={() => {
                                             setIsOpen(false);
-                                            router.push('/myprofile')
+                                            router.push(`/publisher/${userId}`)
                                         }}
                                     />
                                     <MenuLink
@@ -284,7 +284,7 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                                     label="My profile"
                                     onClick={() => {
                                         setIsOpen(false);
-                                        router.push('/myprofile')
+                                        router.push(`/publisher/${userId}`)
                                     }}
                                 />
                                 <MenuLink

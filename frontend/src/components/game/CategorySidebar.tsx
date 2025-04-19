@@ -1,6 +1,7 @@
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation'; // Add navigation hooks
 import apiService from "@/services/apiService";
 
 interface CategorySidebarProps {
@@ -13,6 +14,8 @@ export type CategoryType = {
 }
 
 const CategorySidebar: React.FC<CategorySidebarProps> = ({ id }) => {
+    const router = useRouter();
+    const searchParams = useSearchParams(); // Access current query parameters
     const [categories, setCategories] = useState<CategoryType[]>([]);
 
     const getCategories = async () => {
@@ -27,6 +30,17 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({ id }) => {
         }
     };
 
+    const handleCategorySelect = (categoryId: string) => {
+        // Preserve existing 'os' query parameter if present
+        const currentOs = searchParams.get('os');
+        const query = new URLSearchParams();
+        query.set('category', categoryId);
+        if (currentOs) {
+            query.set('os', currentOs);
+        }
+        router.push(`/search?${query.toString()}`);
+    };
+
     useEffect(() => {
         getCategories();
     }, [id]); // Added 'id' as dependency to refetch if it changes
@@ -37,7 +51,12 @@ const CategorySidebar: React.FC<CategorySidebarProps> = ({ id }) => {
             {categories.length > 0 ? (
                 categories.map((category) => (
                     <div key={category.id} className="mb-2">
-                        <p className='text-lg underline hover:text-gray-300 transition-colors duration-200 cursor-pointer'>{category.title}</p>
+                        <p
+                            onClick={() => handleCategorySelect(category.id)}
+                            className="text-lg underline hover:text-gray-300 transition-colors duration-200 cursor-pointer"
+                        >
+                            {category.title}
+                        </p>
                     </div>
                 ))
             ) : (

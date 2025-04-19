@@ -96,10 +96,10 @@ export default function ImageGallery({ gameId }: ImageGalleryProps) {
   }
 
   return (
-    <div className="w-full my-6">
+    <div className="w-full my-4 sm:my-6">
       {/* Main Image */}
       <div
-        className="relative w-full h-[500px] bg-gray-100 rounded-xl overflow-hidden mb-6"
+        className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] rounded-xl overflow-hidden mb-4 sm:mb-6"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
@@ -111,7 +111,7 @@ export default function ImageGallery({ gameId }: ImageGalleryProps) {
             className="object-contain w-full h-full transition-opacity duration-500"
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-600 text-xl">
+          <div className="flex items-center justify-center h-full text-gray-600 text-sm sm:text-base md:text-lg lg:text-xl">
             No images available
           </div>
         )}
@@ -124,7 +124,7 @@ export default function ImageGallery({ gameId }: ImageGalleryProps) {
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          <div className="flex gap-3 pb-3">
+          <div className="flex gap-2 sm:gap-3 pb-2 sm:pb-3">
             {images.map((image) => (
               <div
                 key={image.id}
@@ -138,9 +138,9 @@ export default function ImageGallery({ gameId }: ImageGalleryProps) {
                 <Image
                   src={image.image_url || '/image_error.jpg'}
                   alt="Thumbnail"
-                  width={120}
-                  height={120}
-                  className="object-cover rounded-md"
+                  width={80}  // Smaller on mobile
+                  height={80}
+                  className="object-cover rounded-md w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28" // Responsive width and height
                 />
               </div>
             ))}

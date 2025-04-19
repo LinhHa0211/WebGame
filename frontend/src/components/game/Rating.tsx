@@ -7,8 +7,10 @@ import Link from 'next/link';
 import apiService from '@/services/apiService';
 import { getUserId } from '@/lib/actions';
 import useLoginModal from '@/hooks/useLoginModal';
+import { useRouter } from 'next/navigation';
 
 interface User {
+  id: string;
   username: string;
   avatar_url: string | null;
 }
@@ -29,6 +31,7 @@ interface RatingProps {
 
 const Rating: React.FC<RatingProps> = ({ id, avgRating }) => {
     const loginModal = useLoginModal();
+    const router = useRouter()
 
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
@@ -216,7 +219,8 @@ const Rating: React.FC<RatingProps> = ({ id, avgRating }) => {
                       src={rating.user.avatar_url || '/image_error.jpg'}
                       width={30}
                       height={30}
-                      className="rounded-full border border-gray-300"
+                      onClick={() => {router.push(`/user/${rating.user.id}`)}}
+                      className="rounded-full border border-gray-300 cursor-pointer"
                       alt={`${rating.user.username}'s avatar`}
                     />
                     <span className="font-semibold text-gray-800">{rating.user.username}</span>

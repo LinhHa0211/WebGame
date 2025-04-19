@@ -15,4 +15,5 @@ urlpatterns = [
     path('users/', api.get_users, name='get_users'),
     path('users/<str:user_id>/delete/', api.delete_user, name='delete_user'),
     path('users/<uuid:userId>/update/', api.user_update, name='api_user_update'),
+    path('me/', api.get_current_user, name='get_current_user'),
 ]

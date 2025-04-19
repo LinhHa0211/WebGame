@@ -3,6 +3,7 @@ from . import api
 
 urlpatterns = [
     path('', api.game_list, name='api_game_list'),
+    path('search/', api.game_list_search, name='api_game_list_search'),
     path('manage/', api.game_list_manage, name='api_game_list_manage'),
     path('category/', api.category_list, name='api_category_list'),
     path('category/<uuid:gameId>/', api.category_game_list, name='api_category_game_list'),
@@ -18,6 +19,7 @@ urlpatterns = [
     path('create/add_category/<uuid:game_id>/<uuid:category_id>/', api.add_categories_to_game, name='api_add_categories_to_game'),
     path('create/add_operating_system/<uuid:game_id>/<uuid:operating_system_id>/', api.add_operating_systems_to_game, name='api_add_operating_systems_to_game'),
     path('<uuid:pk>/', api.game_detail, name='api_game_detail'),
+    path('search/<uuid:pk>/', api.game_search_detail, name='api_game_search_detail'),
     path('<uuid:game_id>/delete/', api.delete_game, name='api_delete_game'),
     path('<uuid:game_id>/update/', api.update_game, name='api_update_game'),
     path('image/<uuid:gameId>/', api.image_list, name='api_image_list'),
@@ -37,4 +39,7 @@ urlpatterns = [
     path('<uuid:gameId>/toggle_favorite/', api.toggle_favorite, name='api_toggle_favorite'),
     path('<uuid:game_id>/ratings/', api.game_ratings, name='api_game_ratings'),
     path('<uuid:game_id>/rate/', api.rate_game, name='api_rate_game'),
+    path('categories/mapping/', api.game_categories_mapping, name='api_game_categories_mapping'),
+    path('operatingSystems/mapping/', api.game_operating_systems_mapping, name='api_game_operating_systems_mapping'),
+    path('promotions/active/', api.get_active_promotions, name='active_promotions'),
 ]

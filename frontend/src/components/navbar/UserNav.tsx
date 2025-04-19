@@ -1,6 +1,7 @@
 'use client';
+
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation"; // Add useSearchParams
 import MenuLink from "./MenuLink";
 import useLoginModal from "@/hooks/useLoginModal";
 import useSignupModal from "@/hooks/useSignupModal";
@@ -23,7 +24,7 @@ interface OperatingSystem {
 
 const UserNav: React.FC<UserNavProps> = ({ userId }) => {
     const router = useRouter();
-
+    const searchParams = useSearchParams(); // Access current query parameters
     const loginModal = useLoginModal();
     const signupModal = useSignupModal();
     
@@ -57,6 +58,32 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
         }
         setIsOperatingSystemOpen(!isOperatingSystemOpen);
         setIsCategoryOpen(false);
+    };
+
+    const handleCategorySelect = (categoryId: string) => {
+        setIsCategoryOpen(false);
+        setIsOpen(false); // Close the sidebar on mobile
+        // Preserve existing 'os' query parameter if present
+        const currentOs = searchParams.get('os');
+        const query = new URLSearchParams();
+        query.set('category', categoryId);
+        if (currentOs) {
+            query.set('os', currentOs);
+        }
+        router.push(`/search?${query.toString()}`);
+    };
+
+    const handleOperatingSystemSelect = (systemId: string) => {
+        setIsOperatingSystemOpen(false);
+        setIsOpen(false); // Close the sidebar on mobile
+        // Preserve existing 'category' query parameter if present
+        const currentCategory = searchParams.get('category');
+        const query = new URLSearchParams();
+        query.set('os', systemId);
+        if (currentCategory) {
+            query.set('category', currentCategory);
+        }
+        router.push(`/search?${query.toString()}`);
     };
 
     useEffect(() => {
@@ -164,21 +191,21 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                                         label="My profile"
                                         onClick={() => {
                                             setIsOpen(false);
-                                            router.push('/myprofile')
+                                            router.push(`/user/${userId}`);
                                         }}
                                     />
                                     <MenuLink
                                         label="Library"
                                         onClick={() => {
                                             setIsOpen(false);
-                                            router.push('/userlib')
+                                            router.push('/userlib');
                                         }}
                                     />
                                     <MenuLink
                                         label="Inbox"
                                         onClick={() => {
                                             setIsOpen(false);
-                                            router.push('/inbox')
+                                            router.push('/inbox');
                                         }}
                                     />
                                 </>
@@ -216,7 +243,7 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                                             <MenuLink
                                                 key={category.id}
                                                 label={category.title}
-                                                onClick={() => setIsOpen(false)}
+                                                onClick={() => handleCategorySelect(category.id)}
                                                 className="underline"
                                             />
                                         ))
@@ -243,7 +270,7 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                                             <MenuLink
                                                 key={os.id}
                                                 label={os.title}
-                                                onClick={() => setIsOpen(false)}
+                                                onClick={() => handleOperatingSystemSelect(os.id)}
                                                 className="underline"
                                             />
                                         ))
@@ -261,14 +288,14 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                                 label="About"
                                 onClick={() => {
                                     setIsOpen(false);
-                                    router.push('/about')
+                                    router.push('/about');
                                 }}
                             />
                             <MenuLink
                                 label="Contact"
                                 onClick={() => {
                                     setIsOpen(false);
-                                    router.push('/contact')
+                                    router.push('/contact');
                                 }}
                             />
                         </div>
@@ -284,21 +311,21 @@ const UserNav: React.FC<UserNavProps> = ({ userId }) => {
                                     label="My profile"
                                     onClick={() => {
                                         setIsOpen(false);
-                                        router.push('/myprofile')
+                                        router.push(`/user/${userId}`);
                                     }}
                                 />
                                 <MenuLink
                                     label="Library"
                                     onClick={() => {
                                         setIsOpen(false);
-                                        router.push('/userlib')
+                                        router.push('/userlib');
                                     }}
                                 />
                                 <MenuLink
                                     label="Inbox"
                                     onClick={() => {
                                         setIsOpen(false);
-                                        router.push('/inbox')
+                                        router.push('/inbox');
                                     }}
                                 />
                             </>

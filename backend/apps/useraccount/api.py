@@ -193,3 +193,16 @@ def user_update(request, userId):
         return JsonResponse({'error': 'User not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def get_current_user(request):
+    try:
+        if request.user.is_anonymous:  # Check if the user is not logged in
+            return JsonResponse({'id': None}, status=200)  # Return a response indicating no logged-in user
+
+        serializer = UserDetailSerializer(request.user)
+        return JsonResponse(serializer.data, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

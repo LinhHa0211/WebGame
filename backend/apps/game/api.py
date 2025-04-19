@@ -147,6 +147,17 @@ def game_detail(request, pk):
 @api_view(['GET'])
 @authentication_classes([])
 @permission_classes([])
+def game_search_detail(request, pk):
+    try:
+        game = Game.objects.get(pk=pk)
+    except Game.DoesNotExist:
+        return JsonResponse({'error': 'Game not found'}, status=404)
+    serializer = GameDetailSerializer(game)
+    return JsonResponse({'data': serializer.data})
+
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
 def category_list(request):
     categories = Category.objects.all()
     serializer = CategorySerializer(categories, many=True)
@@ -683,5 +694,106 @@ def rate_game(request, game_id):
         return JsonResponse({'success': True, 'data': serializer.data})
     except Game.DoesNotExist:
         return JsonResponse({'error': 'Game not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def game_list_search(request):
+    games = Game.objects.all()
+    publisher_id = request.GET.get('publisher_id', '')
+    if publisher_id:
+        games = games.filter(publisher_id=publisher_id)
+    games = games.filter(approval='APPROVED')
+    serializer = GameSearchSerializer(games, many=True)
+    return JsonResponse({'data': serializer.data})
+
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def game_categories_mapping(request):
+    try:
+        # Fetch all CategoryDetail entries
+        category_details = CategoryDetail.objects.all()
+        # Create a mapping of game IDs to their category IDs
+        mapping = {}
+        for detail in category_details:
+            game_id = str(detail.game.id)
+            if game_id not in mapping:
+                mapping[game_id] = []
+            mapping[game_id].append(str(detail.category.id))
+        return JsonResponse(mapping, status=200)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def game_operating_systems_mapping(request):
+    try:
+        # Fetch all OperatingSystemDetail entries
+        os_details = OperatingSystemDetail.objects.all()
+        # Create a mapping of game IDs to their operating system IDs
+        mapping = {}
+        for detail in os_details:
+            game_id = str(detail.game.id)
+            if game_id not in mapping:
+                mapping[game_id] = []
+            mapping[game_id].append(str(detail.operating_system.id))
+        return JsonResponse(mapping, status=200)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def get_active_promotions(request):
+    try:
+        # Fetch all promotion details
+        all_promotions = PromotionDetail.objects.select_related('game', 'promotion', 'game__publisher')
+
+        # Filter active promotions in Python
+        active_promotions = [
+            detail for detail in all_promotions
+            if detail.promotion.end_day > timezone.now()
+        ]
+
+        # Serialize the data manually
+        promotions_data = []
+        for detail in active_promotions:
+            promotion_data = {
+                'id': str(detail.promotion.id),
+                'title': detail.promotion.title,
+                'start_day': detail.promotion.start_day.isoformat() if detail.promotion.start_day else None,
+                'end_day': detail.promotion.end_day.isoformat() if detail.promotion.end_day else None,
+            }
+            publisher_data = {
+                'id': str(detail.game.publisher.id),
+                'username': detail.game.publisher.username,
+            }
+            avg_rating = detail.game.avg_rating
+            if callable(avg_rating):
+                avg_rating_value = avg_rating()
+            else:
+                avg_rating_value = avg_rating or 0
+
+            game_data = {
+                'id': str(detail.game.id),
+                'title': detail.game.title,
+                'price': float(detail.game.price),
+                'image_url': detail.game.image_url(),
+                'publisher': publisher_data,
+                'avg_rating': float(avg_rating_value),
+            }
+            detail_data = {
+                'id': str(detail.id),
+                'discount': detail.discount,
+                'game': game_data,
+                'promotion': promotion_data,
+            }
+            promotions_data.append(detail_data)
+
+        return JsonResponse(promotions_data, safe=False, status=200)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
