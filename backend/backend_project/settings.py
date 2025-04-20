@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     'apps.game',
     'apps.useraccount',
     'apps.chat',
+    'apps.recommendation',
     #third-party apps
     'rest_framework',
     'rest_framework.authtoken',

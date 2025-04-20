@@ -1,5 +1,8 @@
 'use client';
 
+import { useEffect } from 'react';
+
+import apiService from '@/services/apiService';
 import Image from 'next/image';
 import Link from 'next/link';
 import OrderBar from '@/components/game/OrderBar';
@@ -52,6 +55,15 @@ interface GameDetailClientProps {
 }
 
 const GameDetailClient: React.FC<GameDetailClientProps> = ({ game, userId }) => {
+  useEffect(() => {
+    if (userId) {
+      apiService.postRecommendation(`/api/recommendation/${userId}/${game.id}/`, {
+        user_id: userId,
+        game_id: game.id
+      })
+        .catch(err => console.error('Error updating access history:', err));
+    }
+  }, [userId, game.id]);
   return (
     <main className="max-w-[1500px] mx-auto px-6 pb-6">
       <div className="w-full h-[64vh] mb-4 overflow-hidden rounded-xl relative">
