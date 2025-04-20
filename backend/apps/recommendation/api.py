@@ -66,82 +66,63 @@ def get_recommendations(request, userId):
         histories = AccessGameHistory.objects.filter(user=user).order_by('-updated_at')[:10]
         if not histories.exists():
             return JsonResponse({'data': []}, status=200)  # Trả về danh sách rỗng nếu không có lịch sử
-
         # Bước 2: Lấy danh sách tất cả thể loại
         all_categories = Category.objects.all()
         category_ids = [str(category.id) for category in all_categories]
         category_id_to_index = {cat_id: idx for idx, cat_id in enumerate(category_ids)}
-
         # Bước 3: Xây dựng vector hồ sơ người dùng
         user_profile = np.zeros(len(category_ids))  # Vector hồ sơ ban đầu
         total_weight = 0.0
-
         for history in histories:
             game = history.game
             weight = history.weight  # Weight đã được điều chỉnh bằng phân rã tuyến tính
-
             # Lấy các thể loại của game
             category_details = CategoryDetail.objects.filter(game=game)
             game_categories = [str(detail.category.id) for detail in category_details]
-
             # Tạo vector thể loại cho game
             game_vector = np.zeros(len(category_ids))
             for cat_id in game_categories:
                 if cat_id in category_id_to_index:
                     game_vector[category_id_to_index[cat_id]] = 1
-
             # Cộng dồn vào hồ sơ người dùng với trọng số
             user_profile += game_vector * weight
             total_weight += weight
-
         # Chuẩn hóa hồ sơ người dùng
         if total_weight > 0:
             user_profile /= total_weight
-
         # Bước 4: Lấy danh sách đơn hàng của người dùng để lọc game đã mua
         user_orders = Order.objects.filter(user=user, status='PAID')
         purchased_game_ids = set(str(order.game.id) for order in user_orders)
-
         # Bước 5: Tạo vector thể loại cho tất cả game
         all_games = Game.objects.filter(approval='APPROVED')
         game_vectors = []
         game_ids = []
         accessed_game_ids = set(str(history.game.id) for history in histories)
-
         for game in all_games:
             if str(game.id) in accessed_game_ids or str(game.id) in purchased_game_ids:
                 continue  # Bỏ qua các game đã truy cập hoặc đã mua
-
             category_details = CategoryDetail.objects.filter(game=game)
             game_categories = [str(detail.category.id) for detail in category_details]
-
             game_vector = np.zeros(len(category_ids))
             for cat_id in game_categories:
                 if cat_id in category_id_to_index:
                     game_vector[category_id_to_index[cat_id]] = 1
-
             game_vectors.append(game_vector)
             game_ids.append(game.id)
-
         if not game_vectors:
             return JsonResponse({'data': []}, status=200)  # Không có game nào để gợi ý
-
         # Bước 6: Tính độ tương đồng
         game_vectors = np.array(game_vectors)
         user_profile = user_profile.reshape(1, -1)  # Reshape để tính cosine similarity
         similarities = cosine_similarity(user_profile, game_vectors)[0]
-
         # Bước 7: Sắp xếp và lấy top 5 game
         game_similarity_pairs = list(zip(game_ids, similarities))
         game_similarity_pairs.sort(key=lambda x: x[1], reverse=True)  # Sắp xếp giảm dần theo similarity
         top_game_ids = [game_id for game_id, _ in game_similarity_pairs[:5]]  # Lấy top 5
-
         # Bước 8: Lấy thông tin chi tiết của các game được gợi ý
         recommended_games = Game.objects.filter(id__in=top_game_ids)
         serializer = GameDetailSerializer(recommended_games, many=True)
-
         return JsonResponse({'data': serializer.data}, status=200)
-
     except User.DoesNotExist:
         return JsonResponse({'error': 'User not found'}, status=404)
     except Exception as e:
