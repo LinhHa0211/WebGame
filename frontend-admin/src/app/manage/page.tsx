@@ -5,7 +5,7 @@ import { Users, Gamepad2, Settings } from 'lucide-react'; // Using Lucide icons 
 
 const ManagePage = () => {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="bg-gray-100">
       {/* Header */}
       <header className="bg-white shadow">
         <div className="max-w-[1500px] mx-auto px-6 py-4">
