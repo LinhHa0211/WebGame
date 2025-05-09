@@ -97,7 +97,7 @@ graph TD
    ```bash
    npm run dev  
    ```
-3. **Open http://localhost:3000 with your browser to see the result.**
+3. **Open http://localhost:3000 with your browser to see the user result (3001 for admin, 3002 for publisher).**
 
 
 
